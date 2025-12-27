@@ -1,6 +1,21 @@
 import os
 from config import MAX_CHARS
-#MAX_CHARS = 10_000
+from google.genai import types
+
+schema_get_file_content = types.FunctionDeclaration(
+    name="get_file_content",
+    description="Reads and returns the text content of a specific file. Use this when you need to examine the code or data inside a file.",
+    parameters=types.Schema(
+        type=types.Type.OBJECT,
+        properties={
+            "file_path": types.Schema(
+                type=types.Type.STRING,
+                description="The relative path of the file to read (e.g., 'main.py' or 'scripts/utils.py').",
+            ),
+        },
+        required=["file_path"] # Tells the AI it MUST provide this
+    ),
+)
 
 def get_file_content(working_directory, file_path):
     try:    

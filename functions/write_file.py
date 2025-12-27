@@ -1,4 +1,24 @@
 import os
+from google.genai import types
+
+schema_write_file = types.FunctionDeclaration(
+    name="write_file",
+    description="Write content to a file",
+    parameters=types.Schema(
+        type=types.Type.OBJECT,
+        properties={
+            "file_path": types.Schema(
+                type=types.Type.STRING,
+                description="The relative path of the file to write to (e.g., 'lorem.txt' or 'test/result.csv').",
+            ),
+            "content": types.Schema(
+                type=types.Type.STRING,
+                description="The full text content to be written to the file."
+            )
+        },
+        required=["file_path","content"] # Tells the AI it MUST provide this
+    ),
+)
 
 def write_file(working_directory, file_path, content):
     try:
@@ -25,7 +45,7 @@ def write_file(working_directory, file_path, content):
         return(f"Error: An unexpected error occurred: {e}")
 
 
-write_file('temp','test.txt','abcxyz this is a test')
+# write_file('temp','test.txt','abcxyz this is a test')
 
-write_file('temp','test2/test2.txt','abcxyz this is a test2')
+# write_file('temp','test2/test2.txt','abcxyz this is a test2')
 

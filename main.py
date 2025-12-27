@@ -3,6 +3,8 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 import argparse
+from prompt import system_prompt
+from call_functions import available_functions
 
 load_dotenv()
 
@@ -23,14 +25,24 @@ if api_key is None:
 client = genai.Client(api_key=api_key)
 
 response = client.models.generate_content(
-    model='gemini-2.5-flash', contents=messages
+    model='gemini-2.5-flash', contents=messages,
+    config=types.GenerateContentConfig(
+        tools=[available_functions], 
+        system_instruction=system_prompt),
 )
 
-if response.usage_metadata is None:
+function_calls = response.function_calls
+metadata = response.usage_metadata
+
+if metadata is None:
     raise RuntimeError("Failed API request")
 if args.verbose:
     print("User prompt: {args.prompt}}")
-    print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
-    print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
-    
-print(response.text)
+    print(f"Prompt tokens: {metadata.prompt_token_count}")
+    print(f"Response tokens: {metadata.candidates_token_count}")
+
+if function_calls is not None:
+    for function_call in function_calls:
+        print(f"Calling function: {function_call.name}({function_call.args})")
+else:
+    print(response.text)
