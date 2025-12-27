@@ -24,7 +24,7 @@ def get_files_info(working_directory, directory="."):
 
         return '\n'.join(result_list)
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+        return(f"An unexpected error occurred: {e}")
 
 
 

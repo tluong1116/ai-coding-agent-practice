@@ -22,7 +22,7 @@ def get_file_content(working_directory, file_path):
             
         return content
     except Exception as e:
-        print(f"Error: An unexpected error occurred: {e}")
+        return(f"Error: An unexpected error occurred: {e}")
 
 
 
