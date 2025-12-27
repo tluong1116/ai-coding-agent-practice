@@ -4,7 +4,7 @@ from google import genai
 from google.genai import types
 import argparse
 from prompt import system_prompt
-from call_functions import available_functions
+from call_functions import available_functions, call_function
 
 load_dotenv()
 
@@ -25,7 +25,7 @@ if api_key is None:
 client = genai.Client(api_key=api_key)
 
 response = client.models.generate_content(
-    model='gemini-2.5-flash', contents=messages,
+    model='gemini-2.5-flash-lite', contents=messages,
     config=types.GenerateContentConfig(
         tools=[available_functions], 
         system_instruction=system_prompt),
@@ -41,8 +41,22 @@ if args.verbose:
     print(f"Prompt tokens: {metadata.prompt_token_count}")
     print(f"Response tokens: {metadata.candidates_token_count}")
 
+
+function_responses_parts = []
 if function_calls is not None:
     for function_call in function_calls:
-        print(f"Calling function: {function_call.name}({function_call.args})")
+        # 1. Call the function
+        function_call_result = call_function(function_call, verbose=args.verbose)
+        # 2. Safety Checks make sure we received result
+        if function_call_result.parts is None:
+            raise Exception("Error: no parts in function call result")
+        if function_call_result.parts[0].function_response is None:
+            raise Exception("Error: no function response in first part")
+        if function_call_result.parts[0].function_response.response is None:
+            raise Exception("Error no actual response from result")
+        function_responses_parts.append(function_call_result.parts[0])
+
+        if args.verbose:
+            print(f"-> {function_call_result.parts[0],function_call_result.parts[0].function_response.response}")
 else:
     print(response.text)
